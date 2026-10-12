@@ -42,6 +42,43 @@ Then open http://127.0.0.1:8000/docs.
 - `Dockerfile` – container setup using uv
 - `pyproject.toml` / `uv.lock` – dependencies (FastAPI, spaCy, and the `en_core_web_md` model)
 
-# Assignment 2
+# -------------------------
+# Assignment 2: CNN Image Classifier
 
-| POST | `/classify` | Classify an uploaded image into one of 10 CIFAR-10 classes using a CNN | multipart form, field `file` = image |
+A CNN (`SimpleCNN`, `app/cnn_model.py`) trained on CIFAR-10 and served through a new `/classify` endpoint.
+
+**Architecture:** 64×64×3 input → Conv2D(16, 3×3, stride 1, padding 1) → ReLU → MaxPool(2×2, stride 2) → Conv2D(32, 3×3, stride 1, padding 1) → ReLU → MaxPool(2×2, stride 2) → Flatten (8192) → FC(100) → ReLU → FC(10)
+
+**Training:** `train_cnn.ipynb`, 10 epochs, Adam (lr 0.0005), CIFAR-10 images resized from 32×32 to 64×64. Test accuracy: **66.23%**. Weights are saved in `app/models/cnn_cifar10.pth`, so no retraining is needed to run the API.
+
+## New endpoint
+
+| Method | Endpoint | Description | Request |
+|---|---|---|---|
+| POST | `/classify` | Classify an uploaded image into one of the 10 CIFAR-10 classes | multipart form, field `file` = an image (.jpg/.png) |
+
+Classes: airplane, automobile, bird, cat, deer, dog, frog, horse, ship, truck
+
+## How to test
+
+After `docker build -t sps-genai .` and `docker run -p 8000:80 sps-genai`:
+
+- **Browser:** open http://127.0.0.1:8000/docs → POST /classify → Try it out → choose an image → Execute
+- **curl:**
+
+```bash
+curl -X POST http://127.0.0.1:8000/classify -F "file=@cat.jpg"
+```
+
+Example response:
+
+```json
+{"filename": "cat.jpg", "predicted_class": "cat", "confidence": 0.726}
+```
+
+## Files added
+
+- `app/cnn_model.py`: `SimpleCNN` architecture
+- `app/image_classifier.py`: loads the trained weights and predicts the class of an uploaded image
+- `app/models/cnn_cifar10.pth`: trained weights
+- `train_cnn.ipynb`: training and evaluation notebook
