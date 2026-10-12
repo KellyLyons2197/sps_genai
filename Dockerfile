@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.12-slim-bookworm
+   FROM python:3.13-slim-bookworm
 
 # The installer requires curl (and certificates) to download the release archive
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
@@ -10,6 +10,8 @@ RUN sh /uv-installer.sh && rm /uv-installer.sh
 
 # Ensure the installed binary is on the PATH
 ENV PATH="/root/.local/bin/:$PATH"
+   # Use the image's Python 3.13 instead of downloading a newer one
+   ENV UV_PYTHON_DOWNLOADS=never
 
 # Set the working directory
 WORKDIR /code

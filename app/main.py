@@ -1,10 +1,12 @@
-from fastapi import FastAPI, HTTPException  # NEW: HTTPException
+from fastapi import FastAPI, File, HTTPException, UploadFile 
 from pydantic import BaseModel
 
 from app.bigram_model import BigramModel
 from app.embedding_model import EmbeddingModel  # NEW
+from app.image_classifier import ImageClassifier  # NEW
 
 app = FastAPI()
+image_classifier = ImageClassifier()  # NEW
 
 # Sample corpus for the bigram model
 corpus = [
@@ -45,3 +47,12 @@ def get_embedding(request: EmbeddingRequest):
     if not result["has_vector"]:
         raise HTTPException(status_code=404, detail=f"No vector found for '{request.text}'")
     return result
+
+@app.post("/classify")
+async def classify_image(file: UploadFile = File(...)):
+    image_bytes = await file.read()
+    try:
+        result = image_classifier.predict(image_bytes)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Could not read the file as an image")
+    return {"filename": file.filename, **result}

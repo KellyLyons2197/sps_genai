@@ -39,3 +39,7 @@ Then open http://127.0.0.1:8000/docs.
 - `app/embedding_model.py` – `EmbeddingModel` class that loads spaCy's `en_core_web_md` model
 - `Dockerfile` – container setup using uv
 - `pyproject.toml` / `uv.lock` – dependencies (FastAPI, spaCy, and the `en_core_web_md` model)
+
+# Assignment 2
+
+| POST | `/classify` | Classify an uploaded image into one of 10 CIFAR-10 classes using a CNN | multipart form, field `file` = image |
