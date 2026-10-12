@@ -1,4 +1,6 @@
-# SPS GenAI – Assignment 1
+# SPS GenAI – 
+# ----------------------
+# Assignment 1
 
 FastAPI app with a bigram text generator (from Module 2) and spaCy word embeddings.
 
