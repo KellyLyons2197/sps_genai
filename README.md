@@ -82,3 +82,58 @@ Example response:
 - `app/image_classifier.py`: loads the trained weights and predicts the class of an uploaded image
 - `app/models/cnn_cifar10.pth`: trained weights
 - `train_cnn.ipynb`: training and evaluation notebook
+
+# ------------------------------------
+## Assignment 3: GAN for MNIST Digit Generation
+
+A Generative Adversarial Network (GAN), built in PyTorch, that generates handwritten digits. It was trained on the MNIST dataset and is served through FastAPI.
+
+### Architecture
+
+**Generator** (`app/gan_model.py`)
+- Input: noise vector of shape (batch_size, 100)
+- Fully connected layer → 7 × 7 × 128, then reshaped
+- ConvTranspose2d (128 → 64, kernel 4, stride 2, padding 1) → 14 × 14, BatchNorm2d, ReLU
+- ConvTranspose2d (64 → 1, kernel 4, stride 2, padding 1) → 28 × 28, Tanh
+
+**Discriminator** (`app/gan_model.py`)
+- Input: image of shape (1, 28, 28)
+- Conv2d (1 → 64, kernel 4, stride 2, padding 1) → 14 × 14, LeakyReLU(0.2)
+- Conv2d (64 → 128, kernel 4, stride 2, padding 1) → 7 × 7, BatchNorm2d, LeakyReLU(0.2)
+- Flatten → Linear → Sigmoid (real/fake probability)
+
+### Files
+| File | Purpose |
+|---|---|
+| `app/gan_model.py` | Generator and Discriminator classes |
+| `train_gan.py` | Trains the GAN on MNIST and saves the weights |
+| `app/gan_endpoints.py` | FastAPI router with the GAN endpoints |
+| `models/gan_generator.pth` | Trained generator weights, loaded by the API |
+
+### Training
+```bash
+uv run python train_gan.py --epochs 20
+```
+- Loss: binary cross-entropy (BCELoss); optimizer: Adam (lr = 2e-4, betas = (0.5, 0.999)); batch size 128
+- Images are normalized to [-1, 1] to match the generator's Tanh output
+- Saves weights to `models/`, plus a sample grid for each epoch in `samples/`
+
+### API Endpoints
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/gan/generate?num_images=16&seed=42` | Returns a PNG grid of generated digits (1–64 images) |
+| GET | `/gan/generate_json?num_images=4` | Returns the generated digits as 28 × 28 pixel arrays in JSON (1–16 images) |
+
+`seed` is optional. Using the same seed returns the same digits.
+
+### Run with Docker
+```bash
+docker build -t sps_genai .
+docker run -p 8000:80 sps_genai
+```
+Then open http://localhost:8000/docs and try **GET /gan/generate**.
+
+Or from the terminal:
+```bash
+curl -o digits.png "http://localhost:8000/gan/generate?num_images=16&seed=42"
+```
