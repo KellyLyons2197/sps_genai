@@ -27,3 +27,5 @@ COPY ./app /code/app
 
 # Run the application
 CMD ["uv", "run", "--no-sync", "fastapi", "run", "app/main.py", "--port", "80"]
+
+COPY ./models /code/models

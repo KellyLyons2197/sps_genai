@@ -56,3 +56,6 @@ async def classify_image(file: UploadFile = File(...)):
     except Exception:
         raise HTTPException(status_code=400, detail="Could not read the file as an image")
     return {"filename": file.filename, **result}
+
+from app.gan_endpoints import router as gan_router
+app.include_router(gan_router)
