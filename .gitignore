@@ -11,4 +11,4 @@ wheels/
 data/
 
 data/
-samples/
+samples/.DS_Store
