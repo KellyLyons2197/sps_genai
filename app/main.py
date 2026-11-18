@@ -2,11 +2,14 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from app.bigram_model import BigramModel
-from app.embedding_model import EmbeddingModel  # NEW
-from app.image_classifier import ImageClassifier  # NEW
+from app.embedding_model import EmbeddingModel 
+from app.image_classifier import ImageClassifier  
+from app.cifar_routes import router as cifar_router
 
 app = FastAPI()
-image_classifier = ImageClassifier()  # NEW
+image_classifier = ImageClassifier()  
+
+app.include_router(cifar_router)
 
 # Sample corpus for the bigram model
 corpus = [
@@ -18,7 +21,7 @@ corpus = [
 ]
 
 bigram_model = BigramModel(corpus)
-embedding_model = EmbeddingModel()  # NEW
+embedding_model = EmbeddingModel()  
 
 
 class TextGenerationRequest(BaseModel):
@@ -26,7 +29,7 @@ class TextGenerationRequest(BaseModel):
     length: int
 
 
-class EmbeddingRequest(BaseModel):  # NEW
+class EmbeddingRequest(BaseModel):  
     text: str
 
 

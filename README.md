@@ -137,3 +137,43 @@ Or from the terminal:
 ```bash
 curl -o digits.png "http://localhost:8000/gan/generate?num_images=16&seed=42"
 ```
+
+## Assignment 4: CIFAR-10 Diffusion and Energy Models
+
+This assignment adds two generative models trained on CIFAR-10 to the API: a diffusion model and an energy-based model.
+
+### Files
+- `app/cifar_models.py` – model code
+  - Diffusion: UNet with sinusoidal time embeddings, plus the DDPM noise schedule and samplers
+  - Energy: CNN energy model, Langevin sampling, replay buffer and contrastive divergence loss
+- `app/cifar_routes.py` – FastAPI endpoints for both models
+- `train_cifar.py` – training script
+- `models/` – trained weights (`diffusion_cifar10.pt`, `energy_cifar10.pt`)
+
+### Training
+```bash
+uv run python train_cifar.py --model diffusion --epochs 10
+uv run python train_cifar.py --model energy --epochs 5
+```
+CIFAR-10 downloads automatically into `data/` (not committed). Images are scaled to [-1, 1].
+
+- **Diffusion:** the UNet is trained to predict the noise added to an image at a random timestep, with an MSE loss.
+- **Energy:** the model is trained with contrastive divergence. It lowers the energy of real images and raises the energy of samples produced by Langevin dynamics.
+
+### Endpoints
+| Endpoint | Description | Parameters |
+|---|---|---|
+| `GET /diffusion/generate` | Generates images with the diffusion model | `n` (number of images, default 8), `steps` (DDIM sampling steps, default 50; 1000 runs full DDPM) |
+| `GET /energy/generate` | Generates images with Langevin sampling from the energy model | `n` (default 8), `steps` (Langevin steps, default 256) |
+
+Both return a PNG grid of 32×32 images.
+
+### Running with Docker
+```bash
+docker build -t sps-genai .
+docker run -p 8000:80 sps-genai
+```
+Then open http://127.0.0.1:8000/docs to try the endpoints.
+
+### Results
+The diffusion model produces blurry but recognizable color and shape patterns after 10 epochs. The energy model's samples are still mostly noise after 5 epochs, even with 1000 Langevin steps. Energy models are much harder to train than diffusion models and need a lot more training to produce clear images.
